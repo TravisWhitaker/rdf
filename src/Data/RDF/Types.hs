@@ -18,14 +18,30 @@ module Data.RDF.Types where
 
 import qualified Data.Text as T
 
-type RDFGraph = [Triple]
+data RDFGraph = RDFGraph {
+    graphLabel :: !(Maybe IRI)
+  , triples    :: [Triple]
+  } deriving ( Eq
+             , Ord
+             , Read
+             , Show
+             )
+
+data Quad = Quad {
+    quadTriple :: !Triple
+  , quadGraph  :: !(Maybe IRI)
+  } deriving ( Eq
+             , Ord
+             , Read
+             , Show
+             )
 
 data Triple = Triple !Subject !Predicate !Object
-              deriving ( Eq
-                       , Ord
-                       , Read
-                       , Show
-                       )
+            deriving ( Eq
+                     , Ord
+                     , Read
+                     , Show
+                     )
 
 data Subject = IRISubject   !IRI
              | BlankSubject !BlankNode
@@ -62,6 +78,7 @@ newtype BlankNode = BlankNode { unBlankNode :: T.Text }
 data Literal = Literal {
     litString :: !T.Text
   , litType   :: !(Maybe IRI)
+  , litLang   :: !(Maybe T.Text)
   } deriving ( Eq
              , Ord
              , Read
