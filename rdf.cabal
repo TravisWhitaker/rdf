@@ -17,10 +17,12 @@ library
    exposed-modules:    Data.RDF.Types
                      , Data.RDF.Parser.IRI
                      , Data.RDF.Parser.NQuads
+                     , Data.RDF.Encode.NQuads
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.8 && <4.9
                      , attoparsec
+                     , bytestring
                      , text
   hs-source-dirs:      src
   default-language:    Haskell2010
