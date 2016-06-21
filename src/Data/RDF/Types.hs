@@ -77,13 +77,21 @@ newtype BlankNode = BlankNode { unBlankNode :: T.Text }
 
 data Literal = Literal {
     litString :: !T.Text
-  , litType   :: !(Maybe IRI)
-  , litLang   :: !(Maybe T.Text)
+  , litType   :: !LiteralType
   } deriving ( Eq
              , Ord
              , Read
              , Show
              )
+
+data LiteralType = LiteralIRIType  !IRI
+                 | LiteralLangType !T.Text
+                 | LiteralUntyped
+                 deriving ( Eq
+                          , Ord
+                          , Read
+                          , Show
+                          )
 
 data IRI = IRI {
     iriScheme   :: !T.Text

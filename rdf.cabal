@@ -16,6 +16,7 @@ cabal-version:       >=1.10
 library
    exposed-modules:    Data.RDF.Types
                      , Data.RDF.Parser.IRI
+                     , Data.RDF.Parser.NQuads
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.8 && <4.9

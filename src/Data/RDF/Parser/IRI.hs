@@ -54,7 +54,7 @@ parsePort :: A.Parser (Maybe T.Text)
 parsePort = A.option Nothing (Just <$> (A.char ':' *> A.takeWhile1 isDigit))
 
 parsePath :: A.Parser T.Text
-parsePath = (A.char '/') *> A.takeWhile1 isPath
+parsePath = A.option "/" ((A.char '/') *> A.takeWhile1 isPath)
     where isPath c = (isIRI c) && (c /= '?') && (c /= '#')
 
 parseQuery :: A.Parser (Maybe T.Text)
