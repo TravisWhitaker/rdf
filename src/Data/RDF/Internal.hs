@@ -79,6 +79,14 @@ data Triple = Triple !Subject !Predicate !Object
                      )
 
 -- | An RDF subject, i.e. either an 'IRI' or a 'BlankNode'.
+--
+--   This type has an 'IsString' instance, allowing string literals to be
+--   interpreted as 'Predicate's with @-XOverloadedStrings@, like so:
+--
+--   >>> "<http://example.com> :: Subject
+--   IRISubject (IRI (...))
+--   >>> "_:some-node" :: Subject
+--   BlankSubject (BlankNode {unBlankNode = "some-node"})
 data Subject = IRISubject   !IRI
              | BlankSubject !BlankNode
              deriving ( Eq
@@ -90,6 +98,12 @@ data Subject = IRISubject   !IRI
                       )
 
 -- | An RDF predicate.
+--
+--   This type has an 'IsString' instance, allowing string literals to be
+--   interpreted as 'Predicate's with @-XOverloadedStrings@, like so:
+--
+--   >>> "<http://example.com>" :: Predicate
+--   Predicate {unPredicate = IRI (...)}
 newtype Predicate = Predicate { unPredicate :: IRI }
                   deriving ( Eq
                            , Ord
@@ -100,9 +114,26 @@ newtype Predicate = Predicate { unPredicate :: IRI }
                            )
 
 -- | An RDF object, i.e. either an 'IRI', a 'Literal', or a 'BlankNode'.
+--
+--   This type has an 'IsString' instance, allowing string literals to be
+--   interpreted as 'Object's with @-XOverloadedStrings@, like so:
+--
+--   >>> "<http://example.com>" :: Object
+--   IRIObject (IRI (...))
+--   >>> "_:some-node" :: Object
+--   BlankObject (BlankNode {unBlankNode = "some-node"})
+--   >>> "computer" :: Object
+--   LiteralObject (Literal {litString = "computer", litType = LiteralUntyped})
+--
+--   The precedence for literal interpretation is IRI > BlankNode > Literal. To
+--   force a literal that is also a valid blank node label or IRI to be
+--   interpreted as a 'LiteralObject', wrap it in an extra set of double quotes:
+--
+--   >>> "\"_:some-node\"" :: Object
+--   LiteralObject (Literal {litString = "_:some-node", litType = LiteralUntyped})
 data Object = IRIObject     !IRI
-            | LiteralObject !Literal
             | BlankObject   !BlankNode
+            | LiteralObject !Literal
             deriving ( Eq
                      , Ord
                      , Read
@@ -115,6 +146,12 @@ data Object = IRIObject     !IRI
 --   programs processing RDF are permitted to discard these node labels, i.e.
 --   all blank node labels are local to a specific representation of an RDF data
 --   set.
+--
+--   This type has an 'IsString' instance, allowing string literals to be
+--   interpreted as 'BlankNode's with @-XOverloadedStrings@, like so:
+--
+--   >>> "_:some-node" :: BlankNode
+--   BlankNode {unBlankNode = "some-node"}
 newtype BlankNode = BlankNode { unBlankNode :: T.Text }
                   deriving ( Eq
                            , Ord
@@ -127,6 +164,21 @@ newtype BlankNode = BlankNode { unBlankNode :: T.Text }
 -- | An RDF literal. As stipulated by the RDF standard, the 'litType' is merely
 --   metadata; all RDF processing programs must try to handle literals that are
 --   ill-typed.
+--
+--   This type has an 'IsString' instance, allowing string literals to be
+--   interpreted as 'Literal's with @-XOverloadedStrings@, like so:
+--
+--   >>> "computer" :: Literal
+--   Literal {litString = "computer", litType = LiteralUntyped}
+--
+--   For untyped literals the extra double quotes are not required. They are
+--   required for typed literals:
+--
+--   >>> "\"computer\"@en" :: Literal
+--   Literal {litString = "computer", litType = LiteralLangType "en"}
+--
+--   >>> "\"computer\"^^<http://computer.machine/machine>" :: Literal
+--   Literal { litString = "computer", litType = LiteralIRIType (...)}
 data Literal = Literal {
     litString :: !T.Text
   , litType   :: !LiteralType
@@ -164,6 +216,20 @@ data LiteralType = LiteralIRIType  !IRI
 --   when parsing @http://example.com@, @network-uri@ will provide the string
 --   @http:@ as the scheme, while this library will provide @http@ as the
 --   scheme.
+--
+--   This type has an 'IsString' instnace, allowing string literals to be
+--   interpreted as 'IRI's with @-XOverloadedStrings@, like so:
+--
+--   >>> "http://example.com" :: IRI
+--   IRI { iriScheme = "http"
+--       , iriAuth = Just (IRIAuth { iriUser = Nothing
+--                                 , iriHost = "example.com"
+--                                 , iriPort = Nothing
+--                                 })
+--       , iriPath = ""
+--       , iriQuery = Nothing
+--       , iriFragment = Nothing
+--       }
 data IRI = IRI {
     -- | The IRI scheme, e.g. @http@
     iriScheme   :: !T.Text
@@ -356,8 +422,8 @@ instance IsString IRI where
 --   your 'Literal' literals are eagerly evaluated so any malformed literals can
 --   be caught immediately. It would be nicer if this happened at compile time.
 instance IsString Literal where
-    fromString = fromStringParser (parseLiteral <|> parseUnescapedLiteral)
-                                  "Literal"
+    fromString = fromStringParser p "Literal"
+        where p = parseLiteral <|> parseUnescapedLiteral
 
 -- | This instance uses 'parseBlankNode' and calls 'error' if the literal is
 --   invalid. It is not clear exactly when 'fromString' is evaluated so this
@@ -391,4 +457,5 @@ instance IsString Predicate where
 --   your 'Object' literals are eagerly evaluated so any malformed literals can
 --   be caught immediately. It would be nicer if this happened at compile time.
 instance IsString Object where
-    fromString = fromStringParser parseObject "Object"
+    fromString = fromStringParser p "Object"
+        where p = parseObject <|> (LiteralObject <$> parseUnescapedLiteral)
