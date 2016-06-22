@@ -25,7 +25,7 @@ import Data.Char
 import Data.List
 
 import Data.RDF.Types
-import Data.RDF.Parser.IRI
+import Data.RDF.Parser.Common
 
 import qualified Data.Text      as T
 import qualified Data.Text.Lazy as LT
@@ -58,56 +58,3 @@ parseQuad :: A.Parser Quad
 parseQuad = Quad <$> parseTriple
                  <*> ((A.skipSpace *> parseGraphLabel) <*
                      (A.skipSpace *> A.char '.'))
-
-parseGraphLabel :: A.Parser (Maybe IRI)
-parseGraphLabel = A.option Nothing (Just <$> parseEscapedIRI)
-
-parseSubject :: A.Parser Subject
-parseSubject = (IRISubject <$> parseEscapedIRI)
-           <|> (BlankSubject <$> parseBlankNode)
-
-parsePredicate :: A.Parser Predicate
-parsePredicate = Predicate <$> parseEscapedIRI
-
-parseObject :: A.Parser Object
-parseObject = (IRIObject <$> parseEscapedIRI)
-          <|> (BlankObject <$> parseBlankNode)
-          <|> (LiteralObject <$> parseLiteral)
-
-parseEscapedIRI :: A.Parser IRI
-parseEscapedIRI = A.char '<' *> parseIRI <* A.char '>'
-
-parseBlankNode :: A.Parser BlankNode
-parseBlankNode = BlankNode <$> (A.string "_:" *> label)
-    where label       = T.cons <$> labelHead <*> (A.option T.empty labelBody)
-          labelHead   = A.satisfy isHead
-          labelBody   = (A.takeWhile isLabel) >>= checkEnd
-          checkEnd t
-                | T.null t        = pure t
-                | T.last t /= '.' = pure t
-                | otherwise       = fail "label must not end with '.'"
-          isLabel     = not . isSpace
-          isHead c    = (isLabel c)
-                     && (c /= '-')
-                     && (c /= '.')
-          isTail c    = (isLabel c)
-                     && (c /= '.')
-
-parseLiteral :: A.Parser Literal
-parseLiteral = Literal <$> litVal <*> valType
-    where litVal      = A.char '"' *> escString
-          valType     = valIRIType <|> valLangType <|> pure LiteralUntyped
-          valIRIType  = LiteralIRIType <$> (A.string "^^" *> parseEscapedIRI)
-          valLangType = LiteralLangType <$> (A.char '@' *> A.takeWhile1 isLang)
-          isLang c    = (isAlphaNum c) || (c == '-')
-          escString   = do
-                c <- A.anyChar
-                case c of '"'  -> pure T.empty
-                          '\\' -> T.cons <$> (res <$> A.anyChar) <*> escString
-                          _    -> T.cons c <$> escString
-          res 't' = '\t'
-          res 'b' = '\b'
-          res 'n' = '\n'
-          res 'r' = '\r'
-          res 'f' = '\f'
-          res c   = c
