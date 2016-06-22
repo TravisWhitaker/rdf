@@ -16,7 +16,23 @@ syntax described in RDF 1.1 Concepts and Abstract Syntax.
            , DeriveAnyClass
            #-}
 
-module Data.RDF.Types where
+module Data.RDF.Types (
+    -- * Graphs
+    RDFGraph(..)
+  , Quad(..)
+  , Triple(..)
+    -- * Triple Components
+  , Subject(..)
+  , Predicate(..)
+  , Object(..)
+    -- * Terms
+  , BlankNode(..)
+  , Literal(..)
+  , LiteralType(..)
+    -- ** IRIs
+  , IRI(..)
+  , IRIAuth(..)
+  ) where
 
 import Control.DeepSeq
 
@@ -101,7 +117,7 @@ data Object = IRIObject     !IRI
                      , NFData
                      )
 
--- | A blank node with it's local label, without the preceeding "_:". Other
+-- | A blank node with its local label, without the preceeding "_:". Other
 --   programs processing RDF are permitted to discard these node labels, i.e.
 --   all blank node labels are local to a specific representation of an RDF data
 --   set.
@@ -155,11 +171,11 @@ data LiteralType = LiteralIRIType  !IRI
 --   @http:@ as the scheme, while this library will provide @http@ as the
 --   scheme.
 data IRI = IRI {
-    -- | The IRI scheme, i.e. @http@
+    -- | The IRI scheme, e.g. @http@
     iriScheme   :: !T.Text
-    -- | The IRI authority, i.e. @example.com@
+    -- | The IRI authority, e.g. @example.com@
   , iriAuth     :: !(Maybe IRIAuth)
-    -- | The IRI path, i.e. @/posts//index.html@
+    -- | The IRI path, e.g. @/posts//index.html@
   , iriPath     :: !T.Text
     -- | The IRI path, i.e. the component after the @?@ if present.
   , iriQuery    :: !(Maybe T.Text)
@@ -177,7 +193,7 @@ data IRI = IRI {
 data IRIAuth = IRIAuth {
     -- | The IRI user, i.e. the component before the @\@@ if present.
     iriUser :: !(Maybe T.Text)
-    -- | The IRI host, i.e. @example.com@.
+    -- | The IRI host, e.g. @example.com@.
   , iriHost :: T.Text
     -- | The IRI port, i.e. the numeral after the @:@ if present.
   , iriPort :: !(Maybe T.Text)
