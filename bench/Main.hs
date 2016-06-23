@@ -39,8 +39,8 @@ mkBenchDecodeGraph p n = env (return (exampleDoc n))
                                             (nf parseNQuads d))
 
 main :: IO ()
-main = defaultMain [ bgroup "encodGraphFine" $ map (mkBenchEncodeGraph "encodeRDFGraph") [500,1000..100000]
-                   , bgroup "encodGraphCoarse" $ map (mkBenchEncodeGraph "encodeRDFGraph") [100000,200000..1000000]
+main = defaultMain [ bgroup "encodeGraphFine" $ map (mkBenchEncodeGraph "encodeRDFGraph") [500,1000..100000]
+                   , bgroup "encodeGraphCoarse" $ map (mkBenchEncodeGraph "encodeRDFGraph") [100000,200000..1000000]
                    , bgroup "parseGraphsFine" $ map (mkBenchDecodeGraph "parseRDFGraph") [500,1000..100000]
                    , bgroup "parseGraphsCoarse" $ map (mkBenchDecodeGraph "parseRDFGraph") [100000,200000..1000000]
                    ]
