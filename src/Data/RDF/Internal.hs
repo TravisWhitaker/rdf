@@ -10,8 +10,7 @@ Portability : Portable
 Internal module.
 -}
 
-{-# LANGUAGE BangPatterns
-           , DeriveGeneric
+{-# LANGUAGE DeriveGeneric
            , DeriveAnyClass
            , OverloadedStrings
            #-}
@@ -287,8 +286,11 @@ parseIRI = IRI <$> (parseScheme <* A.char ':')
 
 -- | 'IRI' scheme parser.
 parseScheme :: A.Parser T.Text
-parseScheme = T.toLower <$> (T.cons <$> A.letter <*> A.takeWhile1 isScheme)
-    where isScheme c = (isAlphaNum c)
+parseScheme = A.takeWhile1 isScheme >>= check
+    where check t
+            | isAlpha (T.head t) = pure t
+            | otherwise          = fail "parseScheme: must start with letter."
+          isScheme c = isAlphaNum c
                     || (c == '+')
                     || (c == '-')
                     || (c == '.')
@@ -303,12 +305,12 @@ parseAuth = A.option Nothing (A.string "//" *> (Just <$> parseIRIAuth))
 -- | 'IRIAuth' user parser.
 parseUser :: A.Parser (Maybe T.Text)
 parseUser = A.option Nothing (Just <$> (A.takeWhile1 isUser <* A.char '@'))
-    where isUser c = (isIRI c) && (c /= '@')
+    where isUser c = isIRI c && (c /= '@')
 
 -- | 'IRIAuth' host parser.
 parseHost :: A.Parser T.Text
 parseHost = A.takeWhile1 isHost
-    where isHost c = (isIRI c) && (c /= '/') && (c /= ':')
+    where isHost c = isIRI c && (c /= '/') && (c /= ':')
 
 -- | 'IRIAuth' port parser.
 parsePort :: A.Parser (Maybe T.Text)
@@ -316,17 +318,17 @@ parsePort = A.option Nothing (Just <$> (A.char ':' *> A.takeWhile1 isDigit))
 
 -- | 'IRI' path parser.
 parsePath :: A.Parser T.Text
-parsePath = A.option "" ((A.char '/') *> A.takeWhile1 isPath)
-    where isPath c = (isIRI c) && (c /= '?') && (c /= '#')
+parsePath = A.option "" (A.char '/' *> A.takeWhile1 isPath)
+    where isPath c = isIRI c && (c /= '?') && (c /= '#')
 
 -- | 'IRI' query parser.
 parseQuery :: A.Parser (Maybe T.Text)
-parseQuery = A.option Nothing (Just <$> ((A.char '?') *> A.takeWhile1 isQuery))
-    where isQuery c = (isIRI c) && (c/= '#')
+parseQuery = A.option Nothing (Just <$> (A.char '?' *> A.takeWhile1 isQuery))
+    where isQuery c = isIRI c && (c/= '#')
 
 -- | 'IRI' fragment parser.
 parseFragment :: A.Parser (Maybe T.Text)
-parseFragment = A.option Nothing (Just <$> ((A.char '#') *> A.takeWhile1 isIRI))
+parseFragment = A.option Nothing (Just <$> (A.char '#' *> A.takeWhile1 isIRI))
 
 -- | Parser for graph labels, i.e. either an escaped 'IRI' or the empty string.
 parseGraphLabel :: A.Parser (Maybe IRI)
@@ -334,8 +336,8 @@ parseGraphLabel = A.option Nothing (Just <$> parseEscapedIRI)
 
 -- | 'Subject' parser.
 parseSubject :: A.Parser Subject
-parseSubject = (IRISubject <$> parseEscapedIRI)
-           <|> (BlankSubject <$> parseBlankNode)
+parseSubject = IRISubject <$> parseEscapedIRI
+           <|> BlankSubject <$> parseBlankNode
 
 -- | 'Predicate' parser.
 parsePredicate :: A.Parser Predicate
@@ -354,39 +356,45 @@ parseEscapedIRI = A.char '<' *> parseIRI <* A.char '>'
 -- | Parse a blank node label.
 parseBlankNode :: A.Parser BlankNode
 parseBlankNode = BlankNode <$> (A.string "_:" *> label)
-    where label       = T.cons <$> labelHead <*> (A.option T.empty labelBody)
-          labelHead   = A.satisfy isHead
-          labelBody   = (A.takeWhile isLabel) >>= checkEnd
-          checkEnd t
-                | T.null t        = pure t
-                | T.last t /= '.' = pure t
-                | otherwise       = fail "label must not end with '.'"
-          isLabel     = not . isSpace
-          isHead c    = (isLabel c)
-                     && (c /= '-')
-                     && (c /= '.')
-          isTail c    = (isLabel c)
-                     && (c /= '.')
+    where label = A.takeWhile1 isLabel >>= check
+          check t
+            | isHead (T.head t) && isTail (T.last t) = pure t
+            | otherwise                              = fail "parseBlankNode"
+          isLabel  = not . isSpace
+          isHead c = isLabel c
+                  && (c /= '-')
+                  && (c /= '.')
+          isTail c = isLabel c
+                  && (c /= '.')
 
 -- | Parse an RDF 'Literal', including the 'LiteralType' if present.
 parseLiteral :: A.Parser Literal
 parseLiteral = Literal <$> litVal <*> valType
-    where litVal      = A.char '"' *> escString
+    where litVal = A.char '"' *> escString
           valType     = valIRIType <|> valLangType <|> pure LiteralUntyped
           valIRIType  = LiteralIRIType <$> (A.string "^^" *> parseEscapedIRI)
           valLangType = LiteralLangType <$> (A.char '@' *> A.takeWhile1 isLang)
-          isLang c    = (isAlphaNum c) || (c == '-')
-          escString   = do
-                c <- A.anyChar
-                case c of '"'  -> pure T.empty
-                          '\\' -> T.cons <$> (res <$> A.anyChar) <*> escString
-                          _    -> T.cons c <$> escString
-          res 't' = '\t'
-          res 'b' = '\b'
-          res 'n' = '\n'
-          res 'r' = '\r'
-          res 'f' = '\f'
-          res c   = c
+          isLang c    = isAlphaNum c || (c == '-')
+          escString = unescapeAll <$> A.scan False machine
+--          escString = (unescapeAll . dropDQ) <$> A.scan False machine
+--          dropDQ t
+--            | T.null t  = t
+--            | otherwise = T.init t
+          machine False '\\' = Just True
+          machine False '"'  = Nothing
+          machine False _    = Just False
+          machine True _     = Just False
+          unescapeAll = T.concat . unescapeFrag . T.splitOn "\\"
+          unescapeFrag []     = []
+          unescapeFrag (f:fs) = case T.uncons f of
+                Nothing        -> f : unescapeFrag fs
+                (Just (e, f')) -> T.singleton (unescape e) : f' : unescapeFrag fs
+          unescape 't' = '\t'
+          unescape 'b' = '\b'
+          unescape 'n' = '\n'
+          unescape 'r' = '\r'
+          unescape 'f' = '\f'
+          unescape c   = c
 
 -- | Parse an unescaped untyped RDF 'Literal'.
 parseUnescapedLiteral :: A.Parser Literal

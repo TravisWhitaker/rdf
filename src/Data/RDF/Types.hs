@@ -11,10 +11,7 @@ This module provides types for representing RDF data based on the abstract
 syntax described in RDF 1.1 Concepts and Abstract Syntax.
 -}
 
-{-# LANGUAGE BangPatterns
-           , DeriveGeneric
-           , DeriveAnyClass
-           #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 module Data.RDF.Types (
     -- * Graphs

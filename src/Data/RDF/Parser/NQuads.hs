@@ -66,21 +66,21 @@ type Result = Either String RDFGraph
 -- > filterGraph gl = filter (\g -> (graphLabel g) == gl)
 parseNQuads :: LT.Text -> [Result]
 parseNQuads = foldGraphs
-            . map (AL.eitherResult . (AL.parse parseQuad))
+            . map (AL.eitherResult . AL.parse parseQuad)
             . LT.lines
 
 -- | Fold a list of parsed 'Quad's into a list of parsed 'RDFGraphs', where
 --   adjacent 'Quad's in the input are included in the same 'RDFGraph'.
 foldGraphs :: [Either String Quad] -> [Either String RDFGraph]
 foldGraphs [] = []
-foldGraphs ((Left e):qs)  = (Left e) : foldGraphs qs
-foldGraphs ((Right q):qs) = go (RDFGraph (quadGraph q) [(quadTriple q)]) qs
+foldGraphs (Left e:qs)  = Left e : foldGraphs qs
+foldGraphs (Right q:qs) = go (RDFGraph (quadGraph q) [quadTriple q]) qs
     where go g []            = [Right g]
-          go g ((Left e):qs) = (Right g) : (Left e) : (foldGraphs qs)
-          go g@(RDFGraph gl ts) ((Right q):qs)
-                | gl == (quadGraph q) = go (RDFGraph gl ((quadTriple q):ts)) qs
-                | otherwise           = (Right g) : go (RDFGraph (quadGraph q)
-                                                       [(quadTriple q)]) qs
+          go g (Left e:qs) = Right g : Left e : foldGraphs qs
+          go g@(RDFGraph gl ts) (Right q:qs)
+                | gl == quadGraph q = go (RDFGraph gl (quadTriple q:ts)) qs
+                | otherwise         = Right g : go (RDFGraph (quadGraph q)
+                                                   [quadTriple q]) qs
 
 -- | Parse a single N-Quads 'Triple'.
 parseTriple :: A.Parser Triple
