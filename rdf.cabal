@@ -1,13 +1,18 @@
 name:                rdf
 version:             0.1.0.0
 synopsis:            Representation and Incremental Processing of RDF Data
-description:         Representation and Incremental Processing of RDF Data
+description:
+    Data structures, parsers, and encoders for RDF data sets based on the
+    RDF 1.1 abstract syntax and RFC 3987. The interface is intended to support
+    incremental graph processing in constant space.
+
 homepage:            https://github.com/traviswhitaker/rdf
+bug-reports:         https://github.com/traviswhitaker/rdf/issues
 license:             MIT
 license-file:        LICENSE
 author:              Travis Whitaker
 maintainer:          pi.boy.travis@gmail.com
- copyright:          Travis Whitaker 2016
+copyright:           Travis Whitaker 2016
 category:            Data
 build-type:          Simple
 extra-source-files:  ChangeLog.md, README.md
