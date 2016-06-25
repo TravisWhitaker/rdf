@@ -336,8 +336,11 @@ parseGraphLabel = A.option Nothing (Just <$> parseEscapedIRI)
 
 -- | 'Subject' parser.
 parseSubject :: A.Parser Subject
-parseSubject = IRISubject <$> parseEscapedIRI
-           <|> BlankSubject <$> parseBlankNode
+parseSubject = do
+    c <- A.anyChar
+    case c of '<' -> IRISubject <$> (parseIRI <* A.char '>')
+              '_' -> BlankSubject <$> (A.char ':' *> parseBlankNodeLabel)
+              _   -> fail "parseSubject: must be blank node or IRI."
 
 -- | 'Predicate' parser.
 parsePredicate :: A.Parser Predicate
@@ -345,19 +348,20 @@ parsePredicate = Predicate <$> parseEscapedIRI
 
 -- | 'Object' parser.
 parseObject :: A.Parser Object
-parseObject = (IRIObject <$> parseEscapedIRI)
-          <|> (BlankObject <$> parseBlankNode)
-          <|> (LiteralObject <$> parseLiteral)
+parseObject = do
+    c <- A.anyChar
+    case c of '<' -> IRIObject <$> (parseIRI <* A.char '>')
+              '_' -> BlankObject <$> (A.char ':' *> parseBlankNodeLabel)
+              _   -> LiteralObject <$> parseLiteralBody
 
 -- | Parse an escaped 'IRI', i.e. an IRI enclosed in angle brackets.
 parseEscapedIRI :: A.Parser IRI
 parseEscapedIRI = A.char '<' *> parseIRI <* A.char '>'
 
 -- | Parse a blank node label.
-parseBlankNode :: A.Parser BlankNode
-parseBlankNode = BlankNode <$> (A.string "_:" *> label)
-    where label = A.takeWhile1 isLabel >>= check
-          check t
+parseBlankNodeLabel :: A.Parser BlankNode
+parseBlankNodeLabel = BlankNode <$> (A.takeWhile1 isLabel >>= check)
+    where check t
             | isHead (T.head t) && isTail (T.last t) = pure t
             | otherwise                              = fail "parseBlankNode"
           isLabel  = not . isSpace
@@ -367,19 +371,18 @@ parseBlankNode = BlankNode <$> (A.string "_:" *> label)
           isTail c = isLabel c
                   && (c /= '.')
 
--- | Parse an RDF 'Literal', including the 'LiteralType' if present.
-parseLiteral :: A.Parser Literal
-parseLiteral = Literal <$> litVal <*> valType
-    where litVal = A.char '"' *> escString
-          valType     = valIRIType <|> valLangType <|> pure LiteralUntyped
+-- | Parse a blank node label, with the preceeding @_:@.
+parseBlankNode :: A.Parser BlankNode
+parseBlankNode = A.string "_:" *> parseBlankNodeLabel
+
+-- | Like 'parseLiteral', but without the leading double quote.
+parseLiteralBody :: A.Parser Literal
+parseLiteralBody = Literal <$> escString <*> valType
+    where valType     = valIRIType <|> valLangType <|> pure LiteralUntyped
           valIRIType  = LiteralIRIType <$> (A.string "^^" *> parseEscapedIRI)
           valLangType = LiteralLangType <$> (A.char '@' *> A.takeWhile1 isLang)
           isLang c    = isAlphaNum c || (c == '-')
           escString = unescapeAll <$> A.scan False machine
---          escString = (unescapeAll . dropDQ) <$> A.scan False machine
---          dropDQ t
---            | T.null t  = t
---            | otherwise = T.init t
           machine False '\\' = Just True
           machine False '"'  = Nothing
           machine False _    = Just False
@@ -395,6 +398,10 @@ parseLiteral = Literal <$> litVal <*> valType
           unescape 'r' = '\r'
           unescape 'f' = '\f'
           unescape c   = c
+
+-- | Parse an RDF 'Literal', including the 'LiteralType' if present.
+parseLiteral :: A.Parser Literal
+parseLiteral = A.char '"' *> parseLiteralBody
 
 -- | Parse an unescaped untyped RDF 'Literal'.
 parseUnescapedLiteral :: A.Parser Literal
