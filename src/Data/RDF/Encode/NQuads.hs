@@ -33,28 +33,25 @@ import qualified Data.Text.Encoding      as T
 -- | Encodes a 'Triple' as a single line, i.e. with no graph label. Includes the
 --   terminating period and newline.
 encodeTriple :: Triple -> B.Builder
-encodeTriple (Triple s p o) = mconcat [ encodeSubject s
-                                      , B.byteString " "
-                                      , encodePredicate p
-                                      , B.byteString " "
-                                      , encodeObject o
-                                      , B.byteString " .\n"
-                                      ]
+encodeTriple (Triple s p o) = encodeSubject s
+                           <> B.byteString " "
+                           <> encodePredicate p
+                           <> B.byteString " "
+                           <> encodeObject o
+                           <> B.byteString " .\n"
 
 -- | Encodes a 'Quad' as a single line. Includes the terminating period and
 --   newline.
 encodeQuad :: Quad -> B.Builder
 encodeQuad (Quad t Nothing)               = encodeTriple t
-encodeQuad (Quad (Triple s p o) (Just g)) = mconcat
-    [ encodeSubject s
-    , B.byteString " "
-    , encodePredicate p
-    , B.byteString " "
-    , encodeObject o
-    , B.byteString " "
-    , encodeEscapedIRI g
-    , B.byteString " .\n"
-    ]
+encodeQuad (Quad (Triple s p o) (Just g)) = encodeSubject s
+                                         <> B.byteString " "
+                                         <> encodePredicate p
+                                         <> B.byteString " "
+                                         <> encodeObject o
+                                         <> B.byteString " "
+                                         <> encodeEscapedIRI g
+                                         <> B.byteString " .\n"
 
 -- | Encode a single 'RDFGraph' as a 'B.Builder'.
 encodeRDFGraph :: RDFGraph -> B.Builder

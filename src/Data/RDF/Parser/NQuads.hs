@@ -50,7 +50,7 @@ type Result = Either String RDFGraph
 --   the input N-Quads document; a proper graph consists of true sets of nodes
 --   and edges, i.e. no duplicate nodes or edges. Any downstream program
 --   incrementally consuming this parser's output should take care to ignore any
---   supernumary triples.
+--   supernumerary triples.
 --
 --   Likewise, if a graph's constituent triples are not contiguous in the input
 --   N-Quads document, then they will not be folded into contiguous 'RDFGraph's

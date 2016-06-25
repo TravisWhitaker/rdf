@@ -54,42 +54,34 @@ encodeEscapedIRI i = B.byteString "<" <> encodeIRI i <> B.byteString ">"
 
 -- | Encode an 'IRI'.
 encodeIRI :: IRI -> B.Builder
-encodeIRI (IRI s a p q f) = mconcat
-    [ T.encodeUtf8Builder s
-    , B.byteString ":"
-    , maybeBuilder (encodeIRIAuth <$> a)
-    , B.byteString "/"
-    , T.encodeUtf8Builder p
-    , maybeBuilder (((B.byteString "?" <>) . T.encodeUtf8Builder) <$> q)
-    , maybeBuilder (((B.byteString "#" <>) . T.encodeUtf8Builder) <$> f)
-    ]
+encodeIRI (IRI s a p q f) = T.encodeUtf8Builder s
+                         <> B.byteString ":"
+                         <> maybeBuilder (encodeIRIAuth <$> a)
+                         <> B.byteString "/"
+                         <> T.encodeUtf8Builder p
+                         <> maybeBuilder (((B.byteString "?" <>) . T.encodeUtf8Builder) <$> q)
+                         <> maybeBuilder (((B.byteString "#" <>) . T.encodeUtf8Builder) <$> f)
 
 -- | Encode an 'IRIAuth'.
 encodeIRIAuth :: IRIAuth -> B.Builder
-encodeIRIAuth (IRIAuth u h p) = mconcat
-    [ B.byteString "//"
-    , maybeBuilder (((<> B.byteString "@") . T.encodeUtf8Builder) <$> u)
-    , T.encodeUtf8Builder h
-    , maybeBuilder (((B.byteString ":" <>) . T.encodeUtf8Builder) <$> p)
-    ]
+encodeIRIAuth (IRIAuth u h p) = B.byteString "//"
+                             <> maybeBuilder (((<> B.byteString "@") . T.encodeUtf8Builder) <$> u)
+                             <> T.encodeUtf8Builder h
+                             <> maybeBuilder (((B.byteString ":" <>) . T.encodeUtf8Builder) <$> p)
 
 -- | Encode a 'Literal', including the 'LiteralType'.
 encodeLiteral :: Literal -> B.Builder
-encodeLiteral (Literal v t) = mconcat
-    [ B.byteString "\""
-    , T.encodeUtf8Builder (quoteString v)
-    , B.byteString "\""
-    , encodeLiteralType t
-    ]
+encodeLiteral (Literal v t) = B.byteString "\""
+                           <> T.encodeUtf8Builder (quoteString v)
+                           <> B.byteString "\""
+                           <> encodeLiteralType t
 
 -- | Encode a 'LiteralType'.
 encodeLiteralType :: LiteralType -> B.Builder
-encodeLiteralType (LiteralIRIType i)  = mconcat [ B.byteString "^^"
-                                                , encodeEscapedIRI i
-                                                ]
-encodeLiteralType (LiteralLangType l) = mconcat [ B.byteString "@"
-                                                , T.encodeUtf8Builder l
-                                                ]
+encodeLiteralType (LiteralIRIType i)  = B.byteString "^^"
+                                     <> encodeEscapedIRI i
+encodeLiteralType (LiteralLangType l) = B.byteString "@"
+                                     <> T.encodeUtf8Builder l
 encodeLiteralType LiteralUntyped      = mempty
 
 -- | Encode a 'BlankNode'.
