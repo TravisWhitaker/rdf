@@ -18,6 +18,8 @@ module Data.RDF.Encoder.NQuads (
     -- * Graph Encoding
     encodeRDFGraph
   , encodeRDFGraphs
+  , encodeTriple
+  , encodeQuad
   ) where
 
 import qualified Data.ByteString.Builder as B
