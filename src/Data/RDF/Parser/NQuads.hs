@@ -15,6 +15,11 @@ A parser for <https://www.w3.org/TR/2014/REC-n-quads-20140225/ RDF 1.1 N-Quads>.
 module Data.RDF.Parser.NQuads (
     Result(..)
   , parseNQuads
+  , parseTriple
+  , parseQuad
+  , parseQuadLine
+  , foldGraphs
+  , foldResults
   ) where
 
 import Control.Applicative
@@ -65,18 +70,29 @@ type Result = Either String RDFGraph
 -- > filterGraph :: (Maybe IRI) -> [RDFGraph] -> [RDFGraph]
 -- > filterGraph gl = filter (\g -> (graphLabel g) == gl)
 parseNQuads :: LT.Text -> [Result]
-parseNQuads = foldGraphs
+parseNQuads = foldResults
             . map (AL.eitherResult . AL.parse parseQuad)
             . LT.lines
 
--- | Fold a list of parsed 'Quad's into a list of parsed 'RDFGraphs', where
---   adjacent 'Quad's in the input are included in the same 'RDFGraph'.
-foldGraphs :: [Either String Quad] -> [Either String RDFGraph]
+-- | Fold a list of 'Quad's into a list of 'RDFGraph's, where adjacent 'Quad's
+--   in the input are included in the same 'RDFGraph'.
+foldGraphs :: [Quad] -> [RDFGraph]
 foldGraphs [] = []
-foldGraphs (Left e:qs)  = Left e : foldGraphs qs
-foldGraphs (Right q:qs) = go (RDFGraph (quadGraph q) [quadTriple q]) qs
+foldGraphs (q:qs) = go (RDFGraph (quadGraph q) [quadTriple q]) qs
+    where go g [] = [g]
+          go g@(RDFGraph gl ts) (q:qs)
+                | gl == quadGraph q = go (RDFGraph gl (quadTriple q:ts)) qs
+                | otherwise         = g : go (RDFGraph (quadGraph q)
+                                                       [quadTriple q]) qs
+
+-- | Fold a list of parsed 'Quad's into a list of parsed 'RDFGraph's, where
+--   adjacent 'Quad's in the input are included in the same 'RDFGraph'.
+foldResults :: [Either String Quad] -> [Result]
+foldResults [] = []
+foldResults (Left e:qs)  = Left e : foldResults qs
+foldResults (Right q:qs) = go (RDFGraph (quadGraph q) [quadTriple q]) qs
     where go g []            = [Right g]
-          go g (Left e:qs) = Right g : Left e : foldGraphs qs
+          go g (Left e:qs) = Right g : Left e : foldResults qs
           go g@(RDFGraph gl ts) (Right q:qs)
                 | gl == quadGraph q = go (RDFGraph gl (quadTriple q:ts)) qs
                 | otherwise         = Right g : go (RDFGraph (quadGraph q)
@@ -93,3 +109,9 @@ parseQuad :: A.Parser Quad
 parseQuad = Quad <$> parseTriple
                  <*> ((A.skipSpace *> parseGraphLabel) <*
                      (A.skipSpace *> A.char '.'))
+
+-- | Parse a single N-Quads 'Quad' on its own line. This parser is suitable for
+--   using Attoparsec's incremental input mechanism 'parse'/'feed' instead of a
+--   lazy 'T.Text'.
+parseQuadLine :: A.Parser Quad
+parseQuadLine = parseQuad <* A.char '\n'

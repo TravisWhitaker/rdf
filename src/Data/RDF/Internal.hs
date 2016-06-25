@@ -80,7 +80,7 @@ data Triple = Triple !Subject !Predicate !Object
 -- | An RDF subject, i.e. either an 'IRI' or a 'BlankNode'.
 --
 --   This type has an 'IsString' instance, allowing string literals to be
---   interpreted as 'Predicate's with @-XOverloadedStrings@, like so:
+--   interpreted as 'Subject's with @-XOverloadedStrings@, like so:
 --
 --   >>> "<http://example.com> :: Subject
 --   IRISubject (IRI (...))

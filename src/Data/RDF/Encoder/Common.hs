@@ -14,7 +14,7 @@ all RDF host languages.
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module Data.RDF.Encode.Common (
+module Data.RDF.Encoder.Common (
     -- * Triple Components
     encodeSubject
   , encodePredicate

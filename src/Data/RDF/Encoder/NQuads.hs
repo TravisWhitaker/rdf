@@ -14,7 +14,7 @@ An encoder for
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module Data.RDF.Encode.NQuads (
+module Data.RDF.Encoder.NQuads (
     -- * Graph Encoding
     encodeRDFGraph
   , encodeRDFGraphs
@@ -25,7 +25,7 @@ import qualified Data.ByteString.Builder as B
 import Data.Monoid
 
 import Data.RDF.Types
-import Data.RDF.Encode.Common
+import Data.RDF.Encoder.Common
 
 import qualified Data.Text               as T
 import qualified Data.Text.Encoding      as T

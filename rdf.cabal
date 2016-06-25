@@ -15,8 +15,8 @@ cabal-version:       >=1.10
 
 library
   exposed-modules:    Data.RDF.Types
-                    , Data.RDF.Encode.Common
-                    , Data.RDF.Encode.NQuads
+                    , Data.RDF.Encoder.Common
+                    , Data.RDF.Encoder.NQuads
                     , Data.RDF.Parser.Common
                     , Data.RDF.Parser.NQuads
   other-modules:      Data.RDF.Internal
