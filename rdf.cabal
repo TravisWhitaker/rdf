@@ -22,10 +22,10 @@ library
   other-modules:      Data.RDF.Internal
   -- other-extensions:    
   build-depends:       base >=4.8 && <4.9
-                     , attoparsec
-                     , bytestring
-                     , deepseq
-                     , text
+                     , attoparsec >=0.13 && <0.14
+                     , bytestring >=0.10 && <0.11
+                     , deepseq >=1.4 && <1.5
+                     , text >=1.2 && <1.3
   hs-source-dirs:      src
   default-language:    Haskell2010
 
