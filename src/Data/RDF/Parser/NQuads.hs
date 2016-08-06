@@ -13,7 +13,7 @@ A parser for <https://www.w3.org/TR/2014/REC-n-quads-20140225/ RDF 1.1 N-Quads>.
 {-# LANGUAGE OverloadedStrings #-}
 
 module Data.RDF.Parser.NQuads (
-    Result(..)
+    Result
   , parseNQuads
   , parseTriple
   , parseQuad
@@ -22,20 +22,13 @@ module Data.RDF.Parser.NQuads (
   , foldResults
   ) where
 
-import Control.Applicative
-
 import qualified Data.Attoparsec.Text      as A
 import qualified Data.Attoparsec.Text.Lazy as AL
-
-import Data.Char
-
-import Data.List
 
 import Data.RDF.Types
 import Data.RDF.Parser.Common
 
-import qualified Data.Text      as T
-import qualified Data.Text.Lazy as LT
+import qualified Data.Text.Lazy as TL
 
 -- | Either an 'RDFGraph' or a parse error.
 type Result = Either String RDFGraph
@@ -46,7 +39,7 @@ type Result = Either String RDFGraph
 --   then parsing each line of the N-Quads document individually. This allows
 --   for incremental processing in constant space, as well as extracting any
 --   valid data from an N-Quads document that contains some invalid quads.
---   'LT.Text' is used because the RDF 1.1 specification stipulates that RDF
+--   'TL.Text' is used because the RDF 1.1 specification stipulates that RDF
 --   should always be encoded with Unicode.
 --
 --   Due to its incremental nature, this parser will accept some N-Quads
@@ -69,10 +62,10 @@ type Result = Either String RDFGraph
 --
 -- > filterGraph :: (Maybe IRI) -> [RDFGraph] -> [RDFGraph]
 -- > filterGraph gl = filter (\g -> (graphLabel g) == gl)
-parseNQuads :: LT.Text -> [Result]
+parseNQuads :: TL.Text -> [Result]
 parseNQuads = foldResults
             . map (AL.eitherResult . AL.parse parseQuad)
-            . LT.lines
+            . TL.lines
 
 -- | Fold a list of 'Quad's into a list of 'RDFGraph's, where adjacent 'Quad's
 --   in the input are included in the same 'RDFGraph'.

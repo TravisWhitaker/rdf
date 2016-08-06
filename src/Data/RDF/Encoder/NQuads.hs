@@ -29,9 +29,6 @@ import Data.Monoid
 import Data.RDF.Types
 import Data.RDF.Encoder.Common
 
-import qualified Data.Text               as T
-import qualified Data.Text.Encoding      as T
-
 -- | Encodes a 'Triple' as a single line, i.e. with no graph label. Includes the
 --   terminating period and newline.
 encodeTriple :: Triple -> B.Builder

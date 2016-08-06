@@ -17,7 +17,6 @@ Internal module.
 
 module Data.RDF.Internal where
 
-
 import Control.Applicative
 
 import Control.DeepSeq
@@ -40,13 +39,13 @@ import qualified Data.Text as T
 --   data in constant space.
 data RDFGraph = RDFGraph {
     -- | A named RDF graph includes an 'IRI'.
-    graphLabel :: !(Maybe IRI)
+    rdfLabel :: !(Maybe IRI)
     -- | The constituent triples. A proper graph is a strict set of triples
     --   (i.e. no duplicate nodes or edges), but this guarantee cannot be made
     --   if the triples are to be processed incrementally in constant space.
     --   Programs using this type for interpreting RDF graphs should ignore any
     --   supernumerary triples in this list.
-  , triples    :: [Triple]
+  , rdfTriples    :: [Triple]
   } deriving ( Eq
              , Ord
              , Read
@@ -236,7 +235,7 @@ data IRI = IRI {
   , iriAuth     :: !(Maybe IRIAuth)
     -- | The IRI path, e.g. @/posts//index.html@
   , iriPath     :: !T.Text
-    -- | The IRI path, i.e. the component after the @?@ if present.
+    -- | The IRI query, i.e. the component after the @?@ if present.
   , iriQuery    :: !(Maybe T.Text)
     -- | The IRI fragment, i.e. the component after the @#@ if present.
   , iriFragment :: !(Maybe T.Text)

@@ -25,14 +25,20 @@ library
                     , Data.RDF.Graph
                     , Data.RDF.Parser.Common
                     , Data.RDF.Parser.NQuads
+                    , Data.RDF.ToRDF
   other-modules:      Data.RDF.Internal
   build-depends:      base >=4.8 && < 5.0
                     , attoparsec >=0.13 && <0.14
                     , bytestring >=0.10 && <0.11
                     , deepseq >=1.4 && <1.5
+                    , dlist
                     , fgl >=5.5 && <5.6
                     , text >=1.2 && <1.3
+                    , transformers >=0.4 && <0.6
   hs-source-dirs:     src
+  ghc-options:        -Wall
+                      -fwarn-identities
+                      -fwarn-missing-signatures
   default-language:   Haskell2010
 
 benchmark bench-rdf

@@ -16,8 +16,11 @@ these functions will force the entire graph into memory.
            #-}
 
 module Data.RDF.Graph (
+    -- FGL Supporting Types
+    GNode(..)
+  , GEdge
     -- * Conversion to FGL Graphs
-    rdfGraph
+  , rdfGraph
   , triplesGraph
     -- * Conversion from FGL Graphs
   , graphRDF
