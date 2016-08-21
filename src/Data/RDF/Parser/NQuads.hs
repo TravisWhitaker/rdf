@@ -71,7 +71,7 @@ parseNQuads = foldResults
 --   in the input are included in the same 'RDFGraph'.
 foldGraphs :: [Quad] -> [RDFGraph]
 foldGraphs [] = []
-foldGraphs (q:qs) = go (RDFGraph (quadGraph q) [quadTriple q]) qs
+foldGraphs (quad:quads) = go (RDFGraph (quadGraph quad) [quadTriple quad]) quads
     where go g [] = [g]
           go g@(RDFGraph gl ts) (q:qs)
                 | gl == quadGraph q = go (RDFGraph gl (quadTriple q:ts)) qs
@@ -82,8 +82,10 @@ foldGraphs (q:qs) = go (RDFGraph (quadGraph q) [quadTriple q]) qs
 --   adjacent 'Quad's in the input are included in the same 'RDFGraph'.
 foldResults :: [Either String Quad] -> [Result]
 foldResults [] = []
-foldResults (Left e:qs)  = Left e : foldResults qs
-foldResults (Right q:qs) = go (RDFGraph (quadGraph q) [quadTriple q]) qs
+foldResults (Left e:quads)     = Left e : foldResults quads
+foldResults (Right quad:quads) = go (RDFGraph (quadGraph quad)
+                                               [quadTriple quad])
+                                     quads
     where go g []            = [Right g]
           go g (Left e:qs) = Right g : Left e : foldResults qs
           go g@(RDFGraph gl ts) (Right q:qs)

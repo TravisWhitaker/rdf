@@ -59,19 +59,6 @@ runRDFGen m i = evalState (runReaderT m i) 0
 class ToRDF a where
     triples :: a -> RDFGen Triples
 
-instance ToObject a => ToRDF [a] where
-    triples xs = do
-        spine <- BlankSubject <$> newBlankNode
-        base  <- ask
-        let ip i = Predicate $ base {
-            iriPath = T.append (iriPath base) (toText (TL.decimal i))
-          }
-            go _  []     = pure DL.empty
-            go !i (y:ys) = do
-                y' <- object y
-                DL.cons (Triple spine (ip i) y') <$> go (i+1) ys
-        go 0 xs
-
 class ToObject a where
     object :: a -> RDFGen Object
 
@@ -137,4 +124,5 @@ appBaseIRI :: Endo IRI -> RDFGen IRI
 appBaseIRI = asks . appEndo
 
 newBlankNode :: RDFGen BlankNode
-newBlankNode = ReaderT (const ((BlankNode . toText . TL.decimal) <$> get <* modify' (+1)))
+newBlankNode = ReaderT (const ((BlankNode . toText . TL.decimal)
+                           <$> get <* modify' (+1)))
