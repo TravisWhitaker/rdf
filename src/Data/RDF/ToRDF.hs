@@ -10,9 +10,7 @@ Portability : Portable
 This module provides a simple DSL for mapping Haskell data to RDF graphs.
 -}
 
-{-# LANGUAGE BangPatterns
-           , DefaultSignatures
-           , FlexibleContexts
+{-# LANGUAGE FlexibleContexts
            , FlexibleInstances
            , TupleSections
            #-}

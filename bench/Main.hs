@@ -7,7 +7,7 @@ import Criterion.Main
 import qualified Data.ByteString.Builder as B
 
 import Data.RDF.Types
-import Data.RDF.Encode.NQuads
+import Data.RDF.Encoder.NQuads
 import Data.RDF.Parser.NQuads
 
 import Data.String

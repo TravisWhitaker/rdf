@@ -96,7 +96,7 @@ triplesGraph triples = G.mkMapGraph nodes edges
 -- | Convert a 'G.Graph' into an 'RDFGraph'. This will fail if the graph
 --   contains any 'LiteralGNode's with an outward degree greater than zero,
 --   since such a graph is illegal in RDF.
-graphRDF :: G.Graph g => (Maybe IRI) -> g GNode GEdge -> Either String RDFGraph
+graphRDF :: G.Graph g => Maybe IRI -> g GNode GEdge -> Either String RDFGraph
 graphRDF l = (RDFGraph l <$>) .  graphTriples
 
 -- | Convert a 'G.Graph' into a list of 'Triple's. This will fail if the graph
