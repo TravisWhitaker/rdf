@@ -1,5 +1,5 @@
 name:                 rdf
-version:              0.1.0.0
+version:              0.1.0.1
 synopsis:             Representation and Incremental Processing of RDF Data
 description:
     Data structures, parsers, and encoders for RDF data sets based on the
