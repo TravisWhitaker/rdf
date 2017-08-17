@@ -1,3 +1,6 @@
+# 0.1.0.2
+- Bumb fgl dependency version.
+
 # 0.1.0.1
 - Fix the benchmarks.
 - Minor cosmetic changes.
