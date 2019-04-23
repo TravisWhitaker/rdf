@@ -1,2 +1,5 @@
 .stack-work
 *.swp
+dist
+dist-newstyle
+**/.ghc.environment*

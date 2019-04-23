@@ -32,8 +32,6 @@ module Data.RDF.Encoder.Common (
 
 import qualified Data.ByteString.Builder as B
 
-import Data.Monoid
-
 import Data.RDF.Types
 
 import qualified Data.Text               as T

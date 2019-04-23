@@ -24,8 +24,6 @@ module Data.RDF.Encoder.NQuads (
 
 import qualified Data.ByteString.Builder as B
 
-import Data.Monoid
-
 import Data.RDF.Types
 import Data.RDF.Encoder.Common
 

@@ -1,5 +1,5 @@
 name:                 rdf
-version:              0.1.0.2
+version:              0.1.0.3
 synopsis:             Representation and Incremental Processing of RDF Data
 description:
     Data structures, parsers, and encoders for RDF data sets based on the
@@ -32,7 +32,7 @@ library
                     , bytestring >=0.10 && <0.11
                     , deepseq >=1.4 && <1.5
                     , dlist >= 0.7 && <0.9
-                    , fgl >=5.5 && <5.7
+                    , fgl >=5.5 && <5.8
                     , text >=1.2 && <1.3
                     , transformers >=0.4 && <0.6
   hs-source-dirs:     src

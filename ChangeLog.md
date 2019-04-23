@@ -1,3 +1,6 @@
+# 0.1.0.3
+- Bumb dependency versions.
+
 # 0.1.0.2
 - Bumb fgl dependency version.
 
