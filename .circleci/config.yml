@@ -1,0 +1,40 @@
+version: 2
+
+jobs:
+    build:
+        docker:
+            - image: nixos/nix:2.2.1
+        steps:
+            - run:
+                name: Update nixos-19.03
+                command: |
+                    nix-channel --add https://nixos.org/channels/nixos-19.03 nixpkgs
+                    nix-channel --update
+            - run:
+                name: Forfeit freedom
+                command: |
+                    mkdir -p ~/.config/nixpkgs
+                    echo "{allowUnfree = true;}" >> ~/.config/nixpkgs/config.nix
+            - run:
+                name: Install Utils
+                command: |
+                    nix-env -u
+                    nix-env -i coreutils openssh git bash cachix
+            - checkout
+            - run:
+                name: Configure Nix
+                command: |
+                    mkdir -p /etc/nix
+                    echo "build-cores = 2" >> /etc/nix/nix.conf
+            - run:
+                name: Setup Cachix
+                command: cachix use rdf
+            - run:
+                name: Build rdf
+                command: nix-shell --pure --run "cabal new-update && cabal new-build -j$(nproc)"
+
+workflow:
+    version: 2
+    build-and-test:
+        jobs:
+            - build
