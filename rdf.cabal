@@ -27,7 +27,7 @@ library
                     , Data.RDF.Parser.NQuads
                     , Data.RDF.ToRDF
   other-modules:      Data.RDF.Internal
-  build-depends:      base >=4.8 && < 5.0
+  build-depends:      base >=4.11 && < 5.0
                     , attoparsec >=0.13 && <0.14
                     , bytestring >=0.10 && <0.11
                     , deepseq >=1.4 && <1.5
