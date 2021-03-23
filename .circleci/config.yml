@@ -3,12 +3,12 @@ version: 2
 jobs:
     build:
         docker:
-            - image: nixos/nix:2.2.1
+            - image: nixos/nix:2.3.10
         steps:
             - run:
-                name: Update nixos-19.03
+                name: Update nixos-20.09
                 command: |
-                    nix-channel --add https://nixos.org/channels/nixos-19.03 nixpkgs
+                    nix-channel --add https://nixos.org/channels/nixos-20.09 nixpkgs
                     nix-channel --update
             - run:
                 name: Forfeit freedom
