@@ -381,7 +381,7 @@ parseLiteralBody = Literal <$> escString <*> valType
           valIRIType  = LiteralIRIType <$> (A.string "^^" *> parseEscapedIRI)
           valLangType = LiteralLangType <$> (A.char '@' *> A.takeWhile1 isLang)
           isLang c    = isAlphaNum c || (c == '-')
-          escString = unescapeAll <$> A.scan False machine
+          escString = unescapeAll <$> A.scan False machine <* "\""
           machine False '\\' = Just True
           machine False '"'  = Nothing
           machine False _    = Just False
