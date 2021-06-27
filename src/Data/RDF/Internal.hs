@@ -26,6 +26,8 @@ import qualified Data.Attoparsec.Text       as A
 
 import Data.Char
 
+import Data.Functor
+
 import Data.String
 
 import GHC.Generics
@@ -381,22 +383,24 @@ parseLiteralBody = Literal <$> escString <*> valType
           valIRIType  = LiteralIRIType <$> (A.string "^^" *> parseEscapedIRI)
           valLangType = LiteralLangType <$> (A.char '@' *> A.takeWhile1 isLang)
           isLang c    = isAlphaNum c || (c == '-')
-          escString = unescapeAll <$> A.scan False machine
-          machine False '\\' = Just True
-          machine False '"'  = Nothing
-          machine False _    = Just False
-          machine True _     = Just False
-          unescapeAll = T.concat . unescapeFrag . T.splitOn "\\"
-          unescapeFrag []     = []
-          unescapeFrag (f:fs) = case T.uncons f of
-                Nothing        -> f : unescapeFrag fs
-                (Just (e, f')) -> T.singleton (unescape e) : f' : unescapeFrag fs
-          unescape 't' = '\t'
-          unescape 'b' = '\b'
-          unescape 'n' = '\n'
-          unescape 'r' = '\r'
-          unescape 'f' = '\f'
-          unescape c   = c
+
+          escString :: A.Parser T.Text
+          escString = T.pack <$> A.manyTill escChar (A.char '"')
+
+          escChar :: A.Parser Char
+          escChar = A.char '\\' *> (unescape <|> pure '\\')
+              <|> A.satisfy (/= '"')
+
+          unescape :: A.Parser Char
+          unescape =
+              (A.char 't' $> '\t')
+              <|> (A.char 'b' $> '\b')
+              <|> (A.char 'n' $> '\n')
+              <|> (A.char 'r' $> '\r')
+              <|> (A.char 'f' $> '\f')
+              <|> (A.char '"' $> '"')
+              <|> (A.char '\\' $> '\\')
+
 
 -- | Parse an RDF 'Literal', including the 'LiteralType' if present.
 parseLiteral :: A.Parser Literal
