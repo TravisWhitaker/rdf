@@ -31,6 +31,7 @@ import Data.String
 import GHC.Generics
 
 import qualified Data.Text as T
+import qualified Data.List as L
 
 -- | A contiguous RDF graph with optional label. Note that a contiguous graph
 --   within an RDF data set will not appear as a single contiguous graph to this
@@ -386,7 +387,9 @@ parseLiteralBody = Literal <$> escString <*> valType
           machine False '"'  = Nothing
           machine False _    = Just False
           machine True _     = Just False
-          unescapeAll = T.concat . unescapeFrag . T.splitOn "\\"
+          unescapeAll t = case L.uncons $ T.splitOn "\\" t of
+              Just (x, xs) -> x <> T.concat (unescapeFrag xs)
+              Nothing -> t
           unescapeFrag []     = []
           unescapeFrag (f:fs) = case T.uncons f of
                 Nothing        -> f : unescapeFrag fs
