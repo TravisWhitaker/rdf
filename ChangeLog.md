@@ -1,3 +1,6 @@
+# 0.1.0.7
+- Bumb dependency versions.
+
 # 0.1.0.6
 - Bumb dependency versions.
 

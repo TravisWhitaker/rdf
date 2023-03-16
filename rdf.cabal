@@ -1,5 +1,5 @@
 name:                 rdf
-version:              0.1.0.6
+version:              0.1.0.7
 synopsis:             Representation and Incremental Processing of RDF Data
 description:
     Data structures, parsers, and encoders for RDF data sets based on the
@@ -29,7 +29,7 @@ library
   other-modules:      Data.RDF.Internal
   build-depends:      base >=4.11 && < 5.0
                     , attoparsec >=0.13 && <0.14.5
-                    , bytestring >=0.10 && <0.11.4
+                    , bytestring >=0.10 && <0.11.5
                     , deepseq >=1.4 && <1.5
                     , dlist >= 0.7 && <1.1
                     , fgl >=5.5 && <5.9
