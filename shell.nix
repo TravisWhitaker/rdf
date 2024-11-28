@@ -1,17 +1,17 @@
-let pinned-nixpkgs = builtins.fetchGit
-    {
-        url = "https://github.com/nixos/nixpkgs";
-        ref = "master";
-        rev = "bfbfb344598544058481e254b9f0f174d05b5e6a";
-    };
+{ tryLatest ? false
+}:
+let pkgs = if tryLatest
+           then {url = "https://github.com/nixos/nixpkgs"; ref = "master";}
+           else import ./pinned.nix;
+    pinned-nixpkgs = builtins.fetchGit pkgs;
 in with import pinned-nixpkgs {};
 runCommand "rdf-env"
 {
     buildInputs =
-        let thisghc = haskell.packages.ghc963.ghcWithPackages
-            (p: [ p.cabal-install
-                ]);
+        let thisghc = haskell.packages.ghc983.ghcWithPackages
+            (p: []);
         in [ thisghc
              binutils
+             cabal-install
            ];
 } ""
